@@ -515,10 +515,16 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
+			//为刷新容器做准备，设置启动时间、相关启动标志，以及设置容器环境、初始化一些参数等
 			System.out.println("prepareRefresh()");
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			/**
+			 * 刷新容器，设置容器序列号等，并返回beanFactory
+			 * 这一步在不同的容器有不同的实现，如果是xml文件加载bean的话在这一步会摧毁容器，重新创建容器，并根据xml文件加载Bean
+			 * 如果是基于注解的，在这一步做的事相对较少，是通过在refresh()方法中执行ConfigurationClassPostProcessor后置处理器完成对bean的加载。
+			 */
 			System.out.println("ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory()");
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -880,12 +886,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Stop using the temporary ClassLoader for type matching.
+		// 停止使用临时的类加载器
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
+		// 缓存所有的BeanDefinition数据，不期望后期发生改变
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		// 关键：实例化所有的非懒加载单实例Bean
 		beanFactory.preInstantiateSingletons();
 	}
 

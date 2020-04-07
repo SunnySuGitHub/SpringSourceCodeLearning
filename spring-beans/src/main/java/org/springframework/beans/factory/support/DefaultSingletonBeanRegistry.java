@@ -245,6 +245,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					afterSingletonCreation(beanName);
 				}
 				if (newSingleton) {
+					// 当UserService等Bean第一次创建，从creteBean()返回，再根据lambda表达式调用getSingleton()方法
+					// 此时新创建的Bean才正式加入单例池中，同时将Bean返回
 					addSingleton(beanName, singletonObject);
 				}
 			}

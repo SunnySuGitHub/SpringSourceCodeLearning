@@ -11,7 +11,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Main {
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class);
-		UserDao userDao = context.getBean(UserDao.class);
-		System.out.println(userDao);
+		UserService userService = context.getBean(UserService.class);
+		System.out.println(userService);
 	}
 }

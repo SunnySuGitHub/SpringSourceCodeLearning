@@ -61,6 +61,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	/**
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
+	 *
+	 * 如果仅仅是ApplicationContext applicationContext = new AnnotationConfigApplicationContext(),
+	 * 容器是不会启动的（不会register，也不会执行refresh()），这时候需要自己之后再手动启动容器
 	 */
 	public AnnotationConfigApplicationContext() {
 		this.reader = new AnnotatedBeanDefinitionReader(this);
@@ -84,8 +87,33 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
+		/**
+		 * this()方法调用AnnotationConfigApplicationContext的无参构造器，因为本类继承自GenericApplicationContext，
+		 * 		且GenericApplicationContext内部有一个DefaultListableBeanFactory变量，从而本类在调用构造器初始化时，
+		 * 		首先调用父类构造器，new出一个BeanFactory，从而本类也就有了一个BeanFactory
+		 * 同时在容器中初始化一个AnnotatedBeanDefinitionReader和ClassPathBeanDefinitionScanner
+		 *
+		 * 值得说明的是，在构造方法new Reader时，顺便将几个如Autowired注入相关的Processor加入到了BeanDefinitionMap中
+		 * "org.springframework.context.annotation.internalConfigurationAnnotationProcessor"
+		 * "org.springframework.context.event.internalEventListenerFactory"
+		 * "org.springframework.context.event.internalEventListenerProcessor"
+		 * "org.springframework.context.annotation.internalAutowiredAnnotationProcessor"
+		 * "org.springframework.context.annotation.internalCommonAnnotationProcessor"
+		 * */
 		this();
+
+		/**
+		 *register方法重点完成了bean配置类本身的解析和注册，处理过程可以分为以下几个步骤：
+		 * 	1、根据bean配置类，使用BeanDefinition解析Bean的定义信息，主要是一些注解信息
+		 * 	2、Bean作用域的处理，默认缺少@Scope注解，解析成单例
+		 * 	3、借助AnnotationConfigUtils工具类解析通用注解
+		 * 	4、将bean定义信息已beanname，beandifine键值对的形式注册到ioc容器中
+		 */
 		register(componentClasses);
+
+		/**
+		 * 初始化容器关键方法，主要方法提供是本类的父类AbstractApplicationContext类的模板方法，定义了一系列初始化步骤流程
+		 */
 		refresh();
 	}
 
@@ -156,6 +184,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 */
 	@Override
 	public void register(Class<?>... componentClasses) {
+		//判空，后调用内部变量读取器reader的register方法
 		Assert.notEmpty(componentClasses, "At least one component class must be specified");
 		this.reader.register(componentClasses);
 	}

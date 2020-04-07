@@ -214,17 +214,25 @@ public class AnnotatedBeanDefinitionReader {
 	<T> void doRegisterBean(Class<T> beanClass, @Nullable Supplier<T> instanceSupplier, @Nullable String name,
 			@Nullable Class<? extends Annotation>[] qualifiers, BeanDefinitionCustomizer... definitionCustomizers) {
 
+		//首先配置类信息转换成BeanDefinition对象
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+
+		//因为@Conditional等条件存在装配条件，在此判断
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
 
+		//设置bean创建回调方法,instanceSupplier a callback for creating an instance of the bean
 		abd.setInstanceSupplier(instanceSupplier);
+		//解析当前bean的作用域，Scope是Singleton还是Prototype，默认单例
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
+		//生成beanName
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		//解析通用属性(Lazy, primary DependsOn, Role ,Description五个注解)，并将他们的值设置到BeadDefinition的属性当中
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+		//解析Qualifier注解内容
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
@@ -238,12 +246,32 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
+		//BeanDefinitionCustomizer是定制化BeanDefinition的回调方法，通常使用lambda表达式进行设置
+		/**
+		 * 如AnnotationConfigApplicationContext中的某个registerBean方法
+		 * 	public <T> void registerBean(@Nullable String beanName, Class<T> beanClass, Object... constructorArguments) {
+		 * 		this.reader.doRegisterBean(beanClass, null, beanName, null,
+		 * 				bd -> {
+		 * 					for (Object arg : constructorArguments) {
+		 * 						bd.getConstructorArgumentValues().addGenericArgumentValue(arg);
+		 *                                        }                * 				});
+		 * 	}
+		 */
 		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
+			//执行回调方法
 			customizer.customize(abd);
 		}
 
+		//将当前BeadDefinition创建一个Holder进行保管，起始就是beanName和beanDefinition的映射数据结构
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+		/**
+		 * BeanDefinitionReaderUtils.registerBeanDefinition
+		 * 		内部通过DefaultListableBeanFactory.registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+		 * 		按名称将bean定义信息注册到容器中，
+		 * DefaultListableBeanFactory内部维护一个Map<String, BeanDefinition>类型变量beanDefinitionMap，
+		 * 		用于保存注bean定义信息（beanname 和 beandefine映射）
+		 */
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
 

@@ -371,6 +371,14 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 
 	@Override
 	public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+		/**
+		 * 对于userService的metadata：
+		 * targetClass = {Class@1544} "class com.sxy.springlearn.UserService"
+		 * injectedElements = {ArrayList@1558}  size = 1
+		 * 		AutowiredFieldElement for com.sxy.springlearn.Dao.UserDao com.sxy.springlearn.UserService.userDao
+		 * checkedElements = {LinkedHashSet@1559}  size = 1
+		 * 		AutowiredFieldElement for com.sxy.springlearn.Dao.UserDao com.sxy.springlearn.UserService.userDao
+		 */
 		InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
 		try {
 			metadata.inject(bean, beanName, pvs);
