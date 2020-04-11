@@ -1,4 +1,4 @@
-package com.sxy.springlearn;
+package com.sxy.springlearn.Service;
 
 import com.sxy.springlearn.Dao.UserDao;
 import com.sxy.springlearn.util.Constants;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
  * Description:spring
  * Created by Administrator on 2020/4/7
  */
-@Service
+//@Service
 public class UserService {
 
 	@Autowired

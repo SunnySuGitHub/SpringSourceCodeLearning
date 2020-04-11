@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * Description:spring
  * Created by Administrator on 2020/4/5
  */
-@Component
+//@Component
 public class BeanPostProcessorTest implements BeanPostProcessor {
 
 
@@ -21,6 +21,9 @@ public class BeanPostProcessorTest implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		if("userService".equals(beanName)) {
+			System.out.println(bean);
+		}
 		System.err.println(Constants.COMMAND_LINE_PREFIX + beanName + "in BeanPostProcessor postProcessBeforeInitialization");
 		return bean;
 	}

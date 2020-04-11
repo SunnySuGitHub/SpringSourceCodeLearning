@@ -11,7 +11,7 @@ import javax.annotation.PostConstruct;
  * Description:spring
  * Created by Administrator on 2020/4/5
  */
-@Repository
+//@Repository
 public class UserDao {
 
 	public UserDao() {

@@ -850,6 +850,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 				// 当前Bean是普通Bean
 				else {
+					// 在getBean这一步中已经将Bean创建出来，解决了依赖注入，并添加进了单例池中
 					getBean(beanName);
 				}
 			}

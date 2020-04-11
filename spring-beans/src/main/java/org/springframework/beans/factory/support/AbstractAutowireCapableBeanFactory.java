@@ -572,6 +572,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		// Allow post-processors to modify the merged bean definition.
+		// 允许实现了MergedBeanDefinitionPostProcessor接口的processor执行回调方法
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
@@ -587,7 +588,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
-		// 将Bean添加进入singletonFactories及registeredSingletons中
+
+		// 在外层getSingle方法中，将beanName添加进了SingletonCurrentlyInCreation集合中
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -595,6 +597,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 将Bean添加进入singletonFactories及registeredSingletons中
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
@@ -608,6 +611,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// 根据BeanDefinition的定义，对给定BeanWrapper中的Bean实例进行属性值赋值
 			populateBean(beanName, mbd, instanceWrapper);
 
+			// 调用BeanPostProcessor方法及@PostConstruct指定方法
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {

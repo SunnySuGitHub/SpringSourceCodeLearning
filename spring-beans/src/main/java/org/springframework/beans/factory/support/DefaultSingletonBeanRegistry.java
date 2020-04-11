@@ -168,6 +168,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * Return the (raw) singleton object registered under the given name.
 	 * <p>Checks already instantiated singletons and also allows for an early
 	 * reference to a currently created singleton (resolving a circular reference).
+	 *
+	 * 解决循环引用情况
+	 *
 	 * @param beanName the name of the bean to look for
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
@@ -175,13 +178,20 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		Object singletonObject = this.singletonObjects.get(beanName);
+		// 普通Bean第一次进来时单例池中没有，并且isSingletonCurrentlyInCreation为false，
+		// 也就是singletonsCurrentlyInCreation集合中没有当前beanName
+
+		// 当发生循环引用时，isSingletonCurrentlyInCreation为true，进入方法，
+		// 通过singletonFactories实现早期暴露，将提前暴露对象返回，完成循环依赖中其中一方的解耦
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+			// 当前bean出于创建中
 			synchronized (this.singletonObjects) {
 				singletonObject = this.earlySingletonObjects.get(beanName);
 				if (singletonObject == null && allowEarlyReference) {
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
 						singletonObject = singletonFactory.getObject();
+						// 添加进早期单例池，解决循环引用
 						this.earlySingletonObjects.put(beanName, singletonObject);
 						this.singletonFactories.remove(beanName);
 					}
@@ -194,6 +204,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	/**
 	 * Return the (raw) singleton object registered under the given name,
 	 * creating and registering a new one if none registered yet.
+	 *
+	 * 方法作用：如果单例池中由就直接从单例池中取出对象返回，
+	 * 		没有的话，该方法结合lambda表达式，后面接口用createBean()实现，
+	 * 		确保创建Bean实例的同时，将其加入到单例池中，后从单例池中返回
+	 * 方法保证Bean的获取、创建及从单例池中有该对象
+	 *
 	 * @param beanName the name of the bean
 	 * @param singletonFactory the ObjectFactory to lazily create the singleton
 	 * with, if necessary
@@ -212,6 +228,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+				// 将beanName加入到singletonsCurrentlyInCreation中
 				beforeSingletonCreation(beanName);
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);

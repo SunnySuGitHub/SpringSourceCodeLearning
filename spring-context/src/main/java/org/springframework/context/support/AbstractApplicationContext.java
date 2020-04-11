@@ -529,43 +529,58 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// 主要完成一些BeanFactory的属性设置及一些组件的添加
 			System.out.println("prepareBeanFactory(beanFactory)");
 			prepareBeanFactory(beanFactory);
 
 			try {
 				// Allows post-processing of the bean factory in context subclasses.
+				// 模板方法，在beanFactory标准初始化之后执行，用于修改BeanFactory。
+				// 这时还没有Bean被实例化，容器中仅有一些BeanDefinition。
+				// 不同的子类完成此方法的不同实现，实现这个方法允许在容器中之注册一些特殊的BeanPostProcessor
 				System.out.println("postProcessBeanFactory(beanFactory);");
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
+				// 实例化实现了BeanFactoryPostProcessor接口的组件，将它们添加进IOC容器，并调用它们的重写方法
+				// 执行BeanFactoryPostProcessor类组件方法
+				// 接口BeanDefinitionRegistryPostProcessor继承了BeanFactoryPostProcessor，前者具有更高的执行优先级
 				System.out.println("invokeBeanFactoryPostProcessors(beanFactory)");
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 实例化BeanPostProcessor接口实现组件(Bean的后置处理器，拦截Bean的创建过程)，并将它们注册进IOC容器
 				System.out.println("registerBeanPostProcessors(beanFactory)");
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				// 初始化MessageSource组件，做国际化功能，消息绑定，消息解绑
 				System.out.println("initMessageSource()");
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
+				// 初始化事件多播器，如果没有自定义事件多播器，则默认创建SimpleApplicationEventMulticaster
 				System.out.println("initApplicationEventMulticaster()");
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				// 作为一个模板方法留给子类去重写，为特定的容器添加额外的刷新工作，在单例bean实例化之前调用
 				System.out.println("onRefresh();");
 				onRefresh();
 
 				// Check for listener beans and register them.
+				// 将所有实现了ApplicationListener接口的Bean注册进事件多播器，并且如果容器中有早期事件发生，在这步对这些事件进行逐一发布
 				System.out.println("registerListeners()");
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				// 完成BeanFactory的初始化，并实例化所有剩下的的非延迟加载单例Bean，完成依赖注入，调用BeanPostProcessor方法等
 				System.out.println("finishBeanFactoryInitialization(beanFactory)");
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				// 初始化LifeCycleProcessor处理器，并调用其onRefresh()方法
+				// 发布ContextRefreshedEvent事件
 				System.out.println("finishRefresh()");
 				finishRefresh();
 			}

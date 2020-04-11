@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  * Description:spring
  * Created by Administrator on 2020/4/5
  */
-@Component
+//@Component
 public class BeanFactoryPostProcessorTest implements BeanFactoryPostProcessor {
 
 	public BeanFactoryPostProcessorTest() {

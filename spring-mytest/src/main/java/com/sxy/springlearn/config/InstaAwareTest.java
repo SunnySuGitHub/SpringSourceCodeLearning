@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * 		PostConstruct
  * 		BeanPostProcessor postProcessAfterInitialization
  */
-@Component
+//@Component
 public class InstaAwareTest implements InstantiationAwareBeanPostProcessor {
 	@Override
 	public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {

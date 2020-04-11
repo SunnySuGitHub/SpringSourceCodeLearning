@@ -290,12 +290,16 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
+			// typeCheckOnly： 当前Bean是否只是用于检查，并不用于真正使用
 			if (!typeCheckOnly) {
+				// 需要真正使用
+				// 加入alreadyCreated集合中，来标记这个Bean已经创建或者即将要被创建
 				markBeanAsCreated(beanName);
 			}
 
 			try {
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+				// 检查当前RootBeanDefinition是否是抽象Abstract的，抽象的话抛出异常
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.获取给定Bean所需依赖的Bean
@@ -322,7 +326,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				// Create bean instance.创建Bean实例
 				//关键 getSingleton方法，注意循环引用的处理
 				if (mbd.isSingleton()) {
-					// lambda表达式，首先创建Bean，加入单例池，再从单例池中将其获取
+					// getSingleton方法保证Bean的获取、创建及单例池中持有该对象
+					// lambda表达式执行顺序，首先执行外层函数，如果需要用到后面的元素，再执行表达式内的函数
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							return createBean(beanName, mbd, args);
@@ -384,6 +389,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 
 		// Check if required type matches the type of the actual bean instance.
+		// 检查当前Bean是否是正确的类型
 		if (requiredType != null && !requiredType.isInstance(bean)) {
 			try {
 				T convertedBean = getTypeConverter().convertIfNecessary(bean, requiredType);

@@ -1,6 +1,6 @@
 package com.sxy.springlearn;
 
-import com.sxy.springlearn.Dao.UserDao;
+import com.sxy.springlearn.Service.UserService;
 import com.sxy.springlearn.config.TestConfig;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Main {
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class);
-		UserService userService = context.getBean(UserService.class);
-		System.out.println(userService);
+//		UserService userService = context.getBean(UserService.class);
+//		System.out.println(userService);
 	}
 }
